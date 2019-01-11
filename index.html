@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>游戏模拟</title>
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/main.css?version=1" rel="stylesheet">
+
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+  <script type="text/javascript" src="js/jquery.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="js/Chart.bundle.min.js"></script>
+  <script type="text/javascript" src="js/main.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1 style="text-align: center">游戏模拟</h1>
+    <p>房间里有100个人，每人都有100元钱，他们在玩一个游戏。每轮游戏中，每个人都要拿出一元钱随机给另一个人，最后这100个人的财富分布是怎样的？</p>
+  </div>
+  <div class="container-fluid">
+    <canvas id="chart_amount" width="100%" height="200"></canvas>
+  </div>
+  <div class="container">
+    <button class="btn btn-success" id="start_game">开始</button>
+    <button class="btn btn-danger" id="stop_game">停止</button>
+    Round: <span id="round">0</span>
+  </div>
+<script type="text/javascript">
+var people = new Array(100);
+people.fill(100);
+
+var amountChart;
+var round = 0;
+var myInterval;
+
+$(function () {
+    $('[data-toggle="popover"]').popover();
+    $('[data-toggle="tooltip"]').tooltip({
+    });
+    var cAmount = $("#chart_amount");
+    var data = {
+        labels: people,
+        datasets: [
+            {
+                label: '100人',
+                backgroundColor: "#5A9AD6",
+                data: people,
+                spanGaps: true,
+            }
+        ]
+    };
+
+    amountChart = new Chart(cAmount, {
+        type: 'bar',
+        data: data,
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                xAxes: [{
+                    stacked: false,
+                    ticks: { beginAtZero: true },
+                    gridLines: { show: true }
+                }],
+                yAxes: [{
+                    stacked: false,
+                    ticks: { beginAtZero: true },
+                    gridLines: { show: true }
+                }]
+            }
+        }
+    });
+
+    $('#start_game').on('click', function (e) {
+      myInterval = setInterval(processRound, 100);
+    });
+    $('#stop_game').on('click', function (e) {
+      clearInterval(myInterval);
+    });
+});
+
+function processRound() {
+  var newPeople = people.slice(0);
+  var randomPeople;
+  for (var i = 0; i < people.length; i++) {
+    randomPeople = Math.floor(Math.random() * 99);
+    if (people[i] > 0) {
+      newPeople[randomPeople]++;
+      newPeople[i]--;
+    }
+  }
+
+  newPeople = newPeople.sort(function (a, b) { return a - b; });
+  for (var i = 0; i < people.length; i++) {
+    people[i] = newPeople[i];
+  }
+
+  amountChart.update();
+  round++;
+  $('#round').text(round);
+}
+/*
+function processRound() {
+  var newPeople = people.slice(0);
+  var randomPeople;
+  var randomNumbers;
+  $.ajax({
+    type: "GET",
+    url: "https://www.random.org/integers/?num=100&min=0&max=99&col=1&base=10&format=plain&rnd=new",
+  })
+  .done(function (data) {
+    randomNumbers = data.split("\n");
+    console.log(randomNumbers);
+    for (var i = 0; i < people.length; i++) {
+      randomPeople = randomNumbers[i];
+      if (people[i] > 0) {
+        newPeople[randomPeople]++;
+        newPeople[i]--;
+      }
+    }
+
+    newPeople = newPeople.sort(function (a, b) { return a - b; });
+    for (var i = 0; i < people.length; i++) {
+      people[i] = newPeople[i];
+    }
+
+    amountChart.update();
+    round++;
+    $('#round').text(round);
+  });
+}
+*/
+</script>
+</body>
+</html>
